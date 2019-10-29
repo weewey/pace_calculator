@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:pace_calculator/src/app/pages/home/home_controller.dart';
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Test',
       theme: ThemeData(
-        primarySwatch: Colors.yellow,
+        primaryColor: Colors.white,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'Pace Calculator'),
     );
   }
 }
@@ -24,39 +25,139 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  final _controller = HomeController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
+        resizeToAvoidBottomInset: false,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            _buildUpperContainer(context, _controller, _formKey),
+            _buildPaceDashboard(context, _controller)
+          ],
+        ));
+  }
+
+  Container _buildUpperContainer(BuildContext context,
+      HomeController controller, GlobalKey<FormState> formKey) {
+    return Container(
+        height: MediaQuery.of(context).size.height / 2,
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                colors: [Colors.blueAccent, Colors.lightBlueAccent],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             Text(
-              'You have pushed the button this many times:',
+              "Calculate your running pace",
+              textScaleFactor: 1.5,
+              style: TextStyle(color: Colors.white),
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
+            Padding(
+              padding: EdgeInsets.only(left: 8.0, right: 8.0, top: 10.0),
+              child: Card(
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0)),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    ListTile(
+                      title: Text('Expected Pace Per',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      trailing: Icon(Icons.directions_run),
+                    ),
+                    Padding(padding: EdgeInsets.all(8.0)),
+                    _buildForm(controller, formKey),
+                    Padding(padding: EdgeInsets.all(8.0)),
+                    FractionallySizedBox(
+                      widthFactor: 0.8,
+                      child: RaisedButton(
+                          child: Text(
+                            "SAVE",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () {
+                            final form = formKey.currentState;
+                            if (form.validate()) {
+                              form.save();
+                              setState(() {
+                                controller.save();
+                              });
+                            }
+                          },
+                          color: Colors.blueAccent),
+                    ),
+                    Padding(padding: EdgeInsets.all(8.0))
+                  ],
+                ),
+              ),
+            )
           ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ),
-    );
+        ));
+  }
+
+  Form _buildForm(HomeController controller, GlobalKey<FormState> formKey) {
+    return Form(
+        key: formKey,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Padding(padding: EdgeInsets.all(8.0)),
+            Flexible(
+                child: TextFormField(
+                    initialValue: "5",
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(borderSide: BorderSide()),
+                        suffixText: "minutes"),
+                    onSaved: (String value) {
+                      setState(() => controller.setMinutes(value));
+                    },
+                    validator: (String value) {
+                      return int.tryParse(value) != null
+                          ? null
+                          : 'Please type in a number';
+                    })),
+            Padding(padding: EdgeInsets.all(5.0)),
+            Flexible(
+                child: TextFormField(
+                    initialValue: "00",
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                        border: OutlineInputBorder(borderSide: BorderSide()),
+                        suffixText: "seconds"),
+                    onSaved: (String value) {
+                      setState(() => controller.setSeconds(value));
+                    },
+                    validator: (String value) {
+                      return int.tryParse(value) != null
+                          ? null
+                          : 'Please type in a number';
+                    })),
+            Padding(padding: EdgeInsets.all(8.0))
+          ],
+        ));
+  }
+
+  Container _buildPaceDashboard(
+      BuildContext context, HomeController controller) {
+    return Container(
+        color: Colors.white,
+        height: MediaQuery.of(context).size.height / 2,
+        child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text("This is a pace running calculator"),
+              Text(controller.displaySplits())
+            ]));
   }
 }
