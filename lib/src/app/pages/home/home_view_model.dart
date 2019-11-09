@@ -1,6 +1,7 @@
 import 'package:pace_calculator/src/domain/entities/pace.dart';
+import 'package:scoped_model/scoped_model.dart';
 
-class HomeController {
+class HomeViewModel extends Model {
   String _minutes;
   String _seconds;
   PaceUnit paceUnit = PaceUnit.minPerKm;
@@ -18,6 +19,7 @@ class HomeController {
     _pace = Pace(
         Duration(minutes: int.parse(_minutes), seconds: int.parse(_seconds)),
         paceUnit);
+    notifyListeners();
     return _pace;
   }
 

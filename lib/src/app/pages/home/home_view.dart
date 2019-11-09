@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:pace_calculator/src/app/pages/home/home_controller.dart';
+import 'package:pace_calculator/src/app/pages/home/home_view_model.dart';
+import 'package:scoped_model/scoped_model.dart';
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -25,26 +26,31 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _controller = HomeController();
+  final _model = HomeViewModel();
   final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            _buildUpperContainer(context, _controller, _formKey),
-            _buildPaceDashboard(context, _controller)
-          ],
-        ));
+    return ScopedModel(
+        model: _model,
+        child: Scaffold(
+            resizeToAvoidBottomInset: false,
+            body: ScopedModelDescendant<HomeViewModel>(
+                builder: (context, child, model) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  _buildUpperContainer(context, model, _formKey),
+                  _buildPaceDashboard(context, model)
+                ],
+              );
+            })));
   }
 
-  Container _buildUpperContainer(BuildContext context,
-      HomeController controller, GlobalKey<FormState> formKey) {
+  Container _buildUpperContainer(
+      BuildContext context, HomeViewModel model, GlobalKey<FormState> formKey) {
     return Container(
         height: MediaQuery.of(context).size.height / 2,
         decoration: BoxDecoration(
@@ -75,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       trailing: Icon(Icons.directions_run),
                     ),
                     Padding(padding: EdgeInsets.all(8.0)),
-                    _buildForm(controller, formKey),
+                    _buildForm(model, formKey),
                     Padding(padding: EdgeInsets.all(8.0)),
                     FractionallySizedBox(
                       widthFactor: 0.8,
@@ -88,9 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             final form = formKey.currentState;
                             if (form.validate()) {
                               form.save();
-                              setState(() {
-                                controller.save();
-                              });
+                              model.save();
                             }
                           },
                           color: Colors.blueAccent),
@@ -104,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  Form _buildForm(HomeController controller, GlobalKey<FormState> formKey) {
+  Form _buildForm(HomeViewModel model, GlobalKey<FormState> formKey) {
     return Form(
         key: formKey,
         child: Row(
@@ -118,9 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     decoration: const InputDecoration(
                         border: OutlineInputBorder(borderSide: BorderSide()),
                         suffixText: "minutes"),
-                    onSaved: (String value) {
-                      setState(() => controller.setMinutes(value));
-                    },
+                    onSaved: (String value) => model.setMinutes(value),
                     validator: (String value) {
                       return int.tryParse(value) != null
                           ? null
@@ -134,9 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     decoration: InputDecoration(
                         border: OutlineInputBorder(borderSide: BorderSide()),
                         suffixText: "seconds"),
-                    onSaved: (String value) {
-                      setState(() => controller.setSeconds(value));
-                    },
+                    onSaved: (String value) => model.setSeconds(value),
                     validator: (String value) {
                       return int.tryParse(value) != null
                           ? null
@@ -147,17 +147,25 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  Container _buildPaceDashboard(
-      BuildContext context, HomeController controller) {
+  Container _buildPaceDashboard(BuildContext context, HomeViewModel model) {
     return Container(
         color: Colors.white,
         height: MediaQuery.of(context).size.height / 2,
         child: Column(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text("This is a pace running calculator"),
-              Text(controller.displaySplits())
-            ]));
+            children: <Widget>[_buildPaceTable(model)]));
+  }
+
+  DataTable _buildPaceTable(HomeViewModel model) {
+    return DataTable(columns: [
+      DataColumn(label: Text("Distance")),
+      DataColumn(label: Text("Time / (min:ss)"))
+    ], rows: [
+      DataRow(cells: [
+        DataCell(Text("400m")),
+        DataCell(Text("1:30")),
+      ])
+    ]);
   }
 }
