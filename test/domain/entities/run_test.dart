@@ -6,19 +6,32 @@ void main(){
   group("Run Factory", (){
     final fiveMinPerKmPace = Pace(Duration(minutes: 5), PaceUnit.minPerKm);
     final fiveMinPerMilePace = Pace(Duration(minutes: 5), PaceUnit.minPerMile);
-    final distance = 12.0;
+    var distance = 12.0;
 
     test("initialize Run with distance in Km and Pace in minPerKm",(){
-      final run = Run(distance, Unit.km, fiveMinPerKmPace, PaceUnit.minPerKm);
+      final run = Run(distance, Unit.km, fiveMinPerKmPace);
       expect(run.duration, Duration(hours: 1));
-      expect(run.unit, Unit.km);
     });
 
     test("initialize Run with distance in Miles and Pace in minPerMile", (){
-      final run = Run(distance, Unit.miles, fiveMinPerMilePace, PaceUnit.minPerMile);
+      final run = Run(distance, Unit.miles, fiveMinPerMilePace);
       expect(run.duration, Duration(hours: 1));
-      expect(run.unit, Unit.miles);
     });
+
+    test("when the distance is 0.4km and pace is 5:00, calculates the right duration", (){
+      distance = 0.4;
+      final run = Run(distance, Unit.km, fiveMinPerKmPace);
+      expect(run.duration, Duration(minutes: 2, seconds: 0));
+    });
+
+    test("when the distance is 0.4km and pace is 3:45, calculates the right duration", (){
+      distance = 0.4;
+      final run = Run(distance, Unit.km, Pace(Duration(minutes: 3, seconds: 45), PaceUnit.minPerKm));
+      expect(run.duration, Duration(minutes: 1, seconds: 30));
+    });
+
+
+
 
   });
 }

@@ -150,22 +150,18 @@ class _MyHomePageState extends State<MyHomePage> {
   Container _buildPaceDashboard(BuildContext context, HomeViewModel model) {
     return Container(
         color: Colors.white,
+        alignment: Alignment.center,
         height: MediaQuery.of(context).size.height / 2,
-        child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[_buildPaceTable(model)]));
-  }
-
-  DataTable _buildPaceTable(HomeViewModel model) {
-    return DataTable(columns: [
-      DataColumn(label: Text("Distance")),
-      DataColumn(label: Text("Time / (min:ss)"))
-    ], rows: [
-      DataRow(cells: [
-        DataCell(Text("400m")),
-        DataCell(Text("1:30")),
-      ])
-    ]);
+        width: MediaQuery.of(context).size.width,
+        child: PaginatedDataTable(
+          horizontalMargin: MediaQuery.of(context).size.width / 8,
+          rowsPerPage: 4,
+          header: Text("Pace Splits"),
+          columns: <DataColumn>[
+            DataColumn(label: Text("Distance / (km)")),
+            DataColumn(label: Text("Time / (min:ss)"))
+          ],
+          source: model.paceSplitsDataSource,
+        ));
   }
 }

@@ -1,8 +1,9 @@
 const kmPerMiles = 1.60934;
 
-const SupportedDistances = [
+const SupportedDistancesInMetres = [
   400,
   800,
+  1000,
   1200,
   1600,
   2000,
@@ -17,3 +18,5 @@ const SupportedDistances = [
   40000,
   42195
 ];
+
+const oneKmInMetres = 1000;

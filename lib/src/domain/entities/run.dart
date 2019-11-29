@@ -6,23 +6,21 @@ class Run {
   final double distance;
   final Duration duration;
   final Pace pace;
-  final Unit unit;
 
-  Run._(this.distance, this.duration, this.pace, this.unit);
+  Run._(this.distance, this.duration, this.pace);
 
-  factory Run(
-      double distance, Unit distanceUnit, Pace pace, PaceUnit paceUnit) {
-    if (distanceUnit == Unit.km && paceUnit == PaceUnit.minPerKm) {
-      var durationInMinutes = (distance * pace.minPerKm.inMinutes).round();
-      return Run._(
-          distance, Duration(minutes: durationInMinutes), pace, Unit.km);
+  factory Run(double distance, Unit distanceUnit, Pace pace) {
+    if (distanceUnit == Unit.km) {
+      return Run._(distance, _calculateDuration(distance, pace.minPerKm.inSeconds), pace);
+    } else {
+      return Run._(distance, _calculateDuration(distance, pace.minPerMile.inSeconds), pace);
     }
-    if (distanceUnit == Unit.miles && paceUnit == PaceUnit.minPerMile) {
-      var durationInMinutes = (distance * pace.minPerMile.inMinutes).round();
-      return Run._(
-          distance, Duration(minutes: durationInMinutes), pace, Unit.miles);
-    }
-    return Run._(0.0, Duration(), Pace(Duration(minutes: 5), PaceUnit.minPerKm),
-        Unit.km);
+  }
+
+  static Duration _calculateDuration(double distance, int paceInSeconds){
+    final double paceInMinutes = paceInSeconds / 60;
+    final double durationInMinutes = (distance * paceInMinutes);
+    final int remainingSeconds = ((durationInMinutes - durationInMinutes.floor()) * 60).round();
+    return Duration(minutes: durationInMinutes.floor(), seconds: remainingSeconds);
   }
 }
