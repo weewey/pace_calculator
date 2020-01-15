@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pace_calculator/src/app/pages/home/home_view_model.dart';
+import 'package:pace_calculator/src/duration_helpers.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class MyApp extends StatelessWidget {
@@ -36,23 +37,52 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Scaffold(
             resizeToAvoidBottomInset: false,
             body: ScopedModelDescendant<HomeViewModel>(
-                builder: (context, child, model) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  _buildUpperContainer(context, model, _formKey),
-                  _buildPaceDashboard(context, model)
-                ],
-              );
-            })));
+              builder: (context, child, model) {
+                return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: <Widget>[
+                      _buildUpperContainer(context, model, _formKey),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: <Widget>[
+                          Container(
+                            height: MediaQuery.of(context).size.height / 2,
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                                itemCount: model.runs.length,
+                                itemBuilder: (BuildContext context, int index){
+                              return ListTile(
+                                leading: Padding(
+                                  padding: const EdgeInsets.only(left: 25.0),
+                                  child: Icon(Icons.directions_run, size: 50, color: Colors.lightBlueAccent),
+                                ),
+                                title: Padding(
+                                  padding: const EdgeInsets.only(left: 15.0),
+                                  child: Text("Duration: ${DurationHelpers.getReadableString(model.runs[index].duration)}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                                ),
+                                subtitle: Padding(
+                                  padding: const EdgeInsets.all(15.0),
+                                  child: Text("Distance: ${model.runs[index].distance}km", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold) ,),
+                                ),
+                              );
+                            }),
+                          ),
+                        ],
+                      )
+                    ]);
+              },
+            )));
   }
 
-  Container _buildUpperContainer(
-      BuildContext context, HomeViewModel model, GlobalKey<FormState> formKey) {
+  Container _buildUpperContainer(BuildContext context, HomeViewModel model,
+      GlobalKey<FormState> formKey) {
     return Container(
-        height: MediaQuery.of(context).size.height / 2,
+        height: MediaQuery
+            .of(context)
+            .size
+            .height / 2,
         decoration: BoxDecoration(
             gradient: LinearGradient(
                 colors: [Colors.blueAccent, Colors.lightBlueAccent],
@@ -147,21 +177,4 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  Container _buildPaceDashboard(BuildContext context, HomeViewModel model) {
-    return Container(
-        color: Colors.white,
-        alignment: Alignment.center,
-        height: MediaQuery.of(context).size.height / 2,
-        width: MediaQuery.of(context).size.width,
-        child: PaginatedDataTable(
-          horizontalMargin: MediaQuery.of(context).size.width / 8,
-          rowsPerPage: 4,
-          header: Text("Pace Splits"),
-          columns: <DataColumn>[
-            DataColumn(label: Text("Distance / (km)")),
-            DataColumn(label: Text("Time / (min:ss)"))
-          ],
-          source: model.paceSplitsDataSource,
-        ));
-  }
 }

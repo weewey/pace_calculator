@@ -1,5 +1,6 @@
-import 'package:pace_calculator/src/app/pages/home/pace_splits_data_source.dart';
+import 'package:pace_calculator/src/domain/entities/constants.dart';
 import 'package:pace_calculator/src/domain/entities/pace.dart';
+import 'package:pace_calculator/src/domain/entities/run.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class HomeViewModel extends Model {
@@ -7,10 +8,12 @@ class HomeViewModel extends Model {
   String _seconds;
   PaceUnit paceUnit = PaceUnit.minPerKm;
   Pace _pace;
-  PaceSplitsDataSource paceSplitsDataSource;
-  
+  List<Run> runs;
+
   HomeViewModel(){
-    paceSplitsDataSource = PaceSplitsDataSource(Pace(Duration(minutes: 5, seconds: 0), PaceUnit.minPerKm));
+    runs = SupportedDistancesInMetres.map((distance) {
+      return Run(distance / 1000,  Unit.km, Pace(Duration(minutes: 5, seconds: 0), PaceUnit.minPerKm));
+    }).toList();
   }
 
   void setMinutes(String minutes) {
@@ -25,7 +28,7 @@ class HomeViewModel extends Model {
     _pace = Pace(
         Duration(minutes: int.parse(_minutes), seconds: int.parse(_seconds)),
         paceUnit);
-    paceSplitsDataSource = PaceSplitsDataSource(_pace);
+    runs = SupportedDistancesInMetres.map((distance) => Run(distance / 1000,  Unit.km, _pace)).toList();
     notifyListeners();
     return _pace;
   }
